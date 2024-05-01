@@ -34,7 +34,14 @@
     <img th:src="@{'/images/' + ${product.imageFileName}}" 
     alt="..." width="100">
     </td>
-    
+    <td th:text="${product.createdAt.toString().substring(0, 10)}"></td>
+    <td style="white-space:nowarp">
+    <a class="btn btn-primary btm-sm"
+    th:href="@{/products/edit(id=${product.id})}">Edit</a>
+    <a class="btn btn-danger btm-sm"
+    th:href="@{/products/delete(id=${product.id})}"
+    onclick="return confirm('Are you sure?')">Delete</a>
+    </td>
     </tr>
     </tbody>
     </table>

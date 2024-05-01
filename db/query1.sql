@@ -1,0 +1,2 @@
+USE moshop; 
+INSERT INTO products (name, brand, category, price, description, image_file_name, created_at) VALUES ('iphone 13', 'Apple', 'Phones', 958, 'Apple iPhone 13, 128GB, Sage - Unlocked and compatible with my carrier of choice on GSM and CDMA networks. Tested for battery health that exceeds 95% of original capacity.', 'image4.jpg', CURRENT_TIMESTAMP);
