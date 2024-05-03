@@ -96,6 +96,7 @@ public class ProductsController {
 		return "redirect:/products";
 	}
 	
+	//Edit saved details
 	@GetMapping("/edit")
 	public String showEditPage(
 		Model model,
@@ -105,12 +106,95 @@ public class ProductsController {
 			Product product = repo.findById(id).get();
 			model.addAttribute("product", product);
 			
+			ProductDto productDto = new ProductDto();
+			productDto.setName(product.getName());
+			productDto.setBrand(product.getBrand());
+			productDto.setCategory(product.getCategory());
+			productDto.setPrice(product.getPrice());
+			productDto.setDescription(product.getDescription());
 			
+			model.addAttribute("productDto", productDto);
 			
 		} catch(Exception ex) {
 			System.out.println("Exception: " + ex.getMessage());
 			return "redirect:/products";
 		}
 		return "products/EditProduct";
+	}
+	
+	@PostMapping("/edit")
+	public String updateProduct(
+			Model model,
+			@RequestParam int id,
+			@Valid @ModelAttribute ProductDto productDto,
+			BindingResult result
+			) {
+		try {
+			Product product = repo.findById(id).get();
+			model.addAttribute("product", product);
+			
+			if(result.hasErrors()) {
+				return "products/EditProduct";
+			}
+			
+			if(!productDto.getImageFile().isEmpty()) {
+				//delete old image
+				String uploadDir = "public/images/";
+				Path oldImagePath = Paths.get(uploadDir + product.getImageFileName()); 
+				
+				try {
+					Files.delete(oldImagePath);
+				} catch(Exception ex) {
+					System.out.println("Exception: " + ex.getMessage());
+				}
+				
+				//save new image file
+				MultipartFile image = productDto.getImageFile();
+				Date createdAt = new Date();
+				String storageFileName = createdAt.getTime() + "_" + image.getOriginalFilename();
+				
+				try (InputStream inputStream = image.getInputStream()){
+					Files.copy(inputStream, Paths.get(uploadDir + storageFileName),
+							StandardCopyOption.REPLACE_EXISTING);
+				}
+				product.setImageFileName(storageFileName);
+			}
+			
+			product.setName(productDto.getName());
+			product.setBrand(productDto.getBrand());
+			product.setCategory(productDto.getCategory());
+			product.setPrice(productDto.getPrice());
+			product.setDescription(productDto.getDescription());
+			
+			repo.save(product);
+			
+		} catch(Exception ex) {
+			System.out.println("Exception: " + ex.getMessage());
+		}
+		return "redirect:/products";
+	}
+	
+	@GetMapping("/delete")
+	public String deleteProduct(
+			@RequestParam int id
+			) {
+		try {		
+			Product product = repo.findById(id).get();
+			
+			//delete product image
+			Path imagePath = Paths.get("public/images/" + product.getImageFileName()); 
+			try {
+				Files.delete(imagePath);
+			} catch(Exception ex) {
+				System.out.println("Exception: " + ex.getMessage());
+			}
+			
+			//delete the product
+			repo.delete(product);
+			
+		} catch(Exception ex) {
+			System.out.println("Exception: " + ex.getMessage());
+		}
+		return "redirect:/products";
 	}
 }
